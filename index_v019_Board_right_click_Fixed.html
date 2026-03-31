@@ -26,31 +26,33 @@
     <style>
     /* --- APPLE LIQUID GLASS THEME --- */
     :root {
-        --glass-surface: rgba(40, 40, 40, 0.45);
+        --glass-surface: rgba(30, 30, 35, 0.3);
         --glass-border: rgba(255, 255, 255, 0.08);
-        --glass-highlight: inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
-        --glass-shadow: 0 4px 24px -4px rgba(0, 0, 0, 0.5);
+        --glass-border-strong: rgba(255, 255, 255, 0.15);
+        --glass-highlight: inset 0 1px 0 0 rgba(255, 255, 255, 0.15), inset 0 0 20px rgba(255, 255, 255, 0.02);
+        --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6), 0 2px 8px 0 rgba(0, 0, 0, 0.3);
         --glass-active: rgba(255, 255, 255, 0.05);
-        --glass-hover: rgba(60, 60, 60, 0.6);
-        --glass-blur: 24px;
+        --glass-hover: rgba(60, 60, 65, 0.45);
+        --glass-blur: blur(35px) saturate(180%);
         --accent-orange: #fa9400;
-        --accent-glow: rgba(250, 148, 0, 0.4);
+        --accent-glow: rgba(250, 148, 0, 0.6);
         --text-primary: #f5f5f7;
         --text-secondary: #a1a1a6;
-        --bg-deep: #000000;
-        --radius-lg: 20px;
-        --radius-md: 14px;
-        --radius-sm: 8px;
+        --bg-deep: #050505;
+        --radius-lg: 24px;
+        --radius-md: 16px;
+        --radius-sm: 10px;
 
-        --transition-snappy: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
-        --transition-smooth: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        /* Apple-like spring curves */
+        --transition-snappy: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        --transition-smooth: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
     }
 
     @media (prefers-reduced-transparency: reduce) {
         :root {
-            --glass-surface: rgba(30, 30, 30, 0.95);
-            --glass-blur: 0px;
-            --glass-hover: rgba(50, 50, 50, 1);
+            --glass-surface: rgba(35, 35, 40, 0.95);
+            --glass-blur: none;
+            --glass-hover: rgba(55, 55, 60, 1);
         }
     }
 
@@ -67,9 +69,14 @@
 
     body {
         background-color: var(--bg-deep);
-        background-image: radial-gradient(circle at 50% 0%, #1a1a1a 0%, #000000 100%);
+        /* Deep cinematic mesh gradient for glass to refract */
+        background-image:
+            radial-gradient(circle at 15% 50%, rgba(250, 148, 0, 0.08) 0%, transparent 40%),
+            radial-gradient(circle at 85% 30%, rgba(41, 182, 246, 0.05) 0%, transparent 40%),
+            radial-gradient(circle at 50% -20%, rgba(255, 255, 255, 0.05) 0%, transparent 60%);
+        background-attachment: fixed;
         color: var(--text-primary);
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
         font-size: 13px;
         margin: 0;
         padding: 0;
@@ -96,17 +103,41 @@
     /* Glass Panels */
     .glass-panel {
         background: var(--glass-surface);
-        backdrop-filter: blur(var(--glass-blur));
-        -webkit-backdrop-filter: blur(var(--glass-blur));
-        border: 1px solid var(--glass-border);
+        backdrop-filter: var(--glass-blur);
+        -webkit-backdrop-filter: var(--glass-blur);
+        border: 1px solid var(--glass-border-strong);
         box-shadow: var(--glass-highlight), var(--glass-shadow);
         border-radius: var(--radius-lg);
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* Diagonal Reflection for Glass */
+    .glass-panel::before, .modal-box::before, .details-panel::before {
+        content: '';
+        position: absolute;
+        top: 0; left: -100%; width: 50%; height: 100%;
+        background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+        transform: skewX(-25deg);
+        pointer-events: none;
+        z-index: 10;
+        animation: glassSweep 10s infinite cubic-bezier(0.25, 1, 0.5, 1);
     }
 
     /* Animations */
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-    @keyframes pulseGlow { 0% { box-shadow: 0 0 5px var(--accent-glow); } 50% { box-shadow: 0 0 15px var(--accent-glow); } 100% { box-shadow: 0 0 5px var(--accent-glow); } }
+    @keyframes fadeIn { from { opacity: 0; filter: blur(10px); } to { opacity: 1; filter: blur(0); } }
+    @keyframes slideUp { from { transform: translateY(30px) scale(0.98); opacity: 0; filter: blur(5px); } to { transform: translateY(0) scale(1); opacity: 1; filter: blur(0); } }
+    @keyframes pulseGlow { 0% { box-shadow: 0 0 5px var(--accent-glow); } 50% { box-shadow: 0 0 20px var(--accent-glow); } 100% { box-shadow: 0 0 5px var(--accent-glow); } }
+    @keyframes glassSweep { 0% { left: -100%; } 20% { left: 200%; } 100% { left: 200%; } }
+
+    /* Panel Transition Animation */
+    .animate-liquid-reveal {
+        animation: liquidReveal 0.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+    }
+    @keyframes liquidReveal {
+        0% { opacity: 0; transform: scale(0.98) translateY(10px); backdrop-filter: blur(0px) saturate(100%); }
+        100% { opacity: 1; transform: scale(1) translateY(0); backdrop-filter: var(--glass-blur); }
+    }
 
     /* Layout */
     .workspace-split { display: flex; flex: 1; min-height: 0; overflow: hidden; gap: 10px; padding: 0 10px 10px 10px; }
@@ -126,8 +157,8 @@
         width: 350px;
         flex-shrink: 0;
         background-color: var(--glass-surface);
-        backdrop-filter: blur(var(--glass-blur));
-        -webkit-backdrop-filter: blur(var(--glass-blur));
+        backdrop-filter: var(--glass-blur);
+        -webkit-backdrop-filter: var(--glass-blur);
         display: flex;
         flex-direction: column;
         border: 1px solid var(--glass-border);
@@ -181,8 +212,8 @@
 
     .dash-card {
         background: var(--glass-surface);
-        backdrop-filter: blur(var(--glass-blur));
-        -webkit-backdrop-filter: blur(var(--glass-blur));
+        backdrop-filter: var(--glass-blur);
+        -webkit-backdrop-filter: var(--glass-blur);
         border: 1px solid var(--glass-border);
         border-radius: var(--radius-md);
         display: flex;
@@ -218,9 +249,9 @@
     /* --- TOOLBAR --- */
     .toolbar-container {
         display: flex; flex-wrap: wrap; gap: 10px; align-items: center; padding: 10px 14px;
-        background: var(--glass-surface); border: 1px solid var(--glass-border);
-        backdrop-filter: blur(var(--glass-blur));
-        -webkit-backdrop-filter: blur(var(--glass-blur));
+        background: var(--glass-surface); border: 1px solid var(--glass-border-strong);
+        backdrop-filter: var(--glass-blur);
+        -webkit-backdrop-filter: var(--glass-blur);
         box-shadow: var(--glass-highlight), 0 4px 16px rgba(0,0,0,0.2);
         border-radius: var(--radius-md); margin-bottom: 12px; flex-shrink: 0;
         position: relative; z-index: 50;
@@ -358,9 +389,12 @@
     .tab:hover { background: rgba(255,255,255,0.06); color: #fff; }
     .tab.active {
         background: var(--glass-surface); color: #fff;
-        border-color: var(--glass-border); border-bottom-color: transparent;
-        box-shadow: var(--glass-highlight), 0 -4px 12px rgba(0,0,0,0.15);
-        backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur));
+        border-color: var(--glass-border-strong); border-bottom-color: transparent;
+        box-shadow: var(--glass-highlight), 0 -8px 20px rgba(0,0,0,0.2);
+        backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur);
+        z-index: 10;
+        transform: scale(1.02);
+        transform-origin: bottom center;
     }
     .tab.active::after {
         content:''; position: absolute; bottom: 0; left: 10%; width: 80%; height: 3px;
@@ -385,7 +419,11 @@
         z-index: 1;
         text-shadow: 0 1px 4px rgba(0,0,0,0.5);
     }
-    .pool-btn:active { transform: scale(0.98); }
+    .pool-btn:active { transform: scale(0.95); transition: transform 0.1s cubic-bezier(0.34, 1.56, 0.64, 1); }
+    .pool-btn {
+        transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s, color 0.2s;
+        transform-origin: center center;
+    }
 
     .mini-pill {
         padding: 4px 12px; font-size: 11px; font-weight: 600; cursor: pointer; border-radius: 20px; margin: 0 4px; border: 1px solid; white-space: nowrap;
@@ -448,8 +486,8 @@
 
     .board-card {
         background: var(--glass-surface);
-        backdrop-filter: blur(var(--glass-blur));
-        -webkit-backdrop-filter: blur(var(--glass-blur));
+        backdrop-filter: var(--glass-blur);
+        -webkit-backdrop-filter: var(--glass-blur);
         border: 1px solid var(--glass-border);
         border-radius: var(--radius-md);
         overflow: hidden;
@@ -857,7 +895,8 @@
             const handleLogin = (e) => { e.preventDefault(); auth.signInWithEmailAndPassword(email, pass).catch(e => alert(e.message)); };
             return (
                 <div className="h-full flex items-center justify-center bg-black p-4" style={{backgroundImage: 'radial-gradient(circle at 50% 50%, #1a1a1a 0%, #000 100%)'}}>
-                    <form onSubmit={handleLogin} className="glass-panel p-10 w-full max-w-sm text-center rounded-2xl">
+                    <form onSubmit={handleLogin} className="glass-panel p-10 w-full max-w-sm text-center rounded-2xl shadow-2xl animate-liquid-reveal relative">
+                        <div className="absolute inset-0 bg-gradient-to-tr from-white/5 to-transparent pointer-events-none rounded-2xl"></div>
                         <img src="SP_Logo.png" className="w-16 h-16 mx-auto mb-4 object-contain opacity-80" />
                         <h1 className="text-2xl font-bold text-white mb-8 tracking-tight">ShotPilot Cloud</h1>
                         <input className="w-full mb-4 p-3 bg-white/10 border-white/10 text-white rounded-lg focus:ring-2 ring-orange-500" placeholder="Email" value={email} onChange={e=>setEmail(e.target.value)} />
@@ -2096,6 +2135,7 @@
 
                         {/* --- TAB 1: DASHBOARD --- */}
                         {activeTab === "Dashboard" && (
+                            <div className="flex flex-col h-full animate-liquid-reveal">
                             <>
                                 <div className="flex flex-col md:flex-row justify-between items-center p-3 pb-0 flex-shrink-0 gap-2">
                                     <div className="flex rounded-lg overflow-hidden shadow-lg">
@@ -2165,6 +2205,7 @@
                                         <div className="table-wrapper custom-scrollbar">
                                             {loading ? <div className="text-center p-20 text-gray-500 font-light text-xl animate-pulse">Loading Shot Data...</div> : (
                                                 viewMode === 'list' ? (
+                                                    <div className="w-full animate-liquid-reveal">
                                                     <table className="w-full">
                                                        <thead>
                                                             <tr>
@@ -2210,8 +2251,9 @@
                                                             })}
                                                         </tbody>
                                                     </table>
+                                                    </div>
                                                 ) : (
-                                                    <div className="board-grid-container custom-scrollbar">
+                                                    <div className="board-grid-container custom-scrollbar animate-liquid-reveal">
                                                         {filtered.map(shot => {
                                                             const status = shot[getField('status')] || "Unattended"; const source = shot[getField('source')] || "Inhouse";
                                                             const artist = shot[getField('artist')] || "—"; const label = shot[getField('label')] || "";
@@ -2323,17 +2365,17 @@
                                         </>
                                     )}
                                 </div>
-                            </>
+                            </div>
                         )}
 
 
                         {/* --- TAB 2: PROJECT OVERVIEW --- */}
                         {activeTab === "Project Overview" && (
-                            <ProjectOverview shots={shots} projectName={activeProject} initialPool={activePool} />
+                            <div className="h-full animate-liquid-reveal"><ProjectOverview shots={shots} projectName={activeProject} initialPool={activePool} /></div>
                         )}
 
                         {activeTab === "Artist Breakdown" && (
-                            <div className="p-6 h-full flex flex-col gap-6 overflow-hidden animate-fadeIn">
+                            <div className="p-6 h-full flex flex-col gap-6 overflow-hidden animate-liquid-reveal">
                                 <div className="flex items-center gap-6 flex-shrink-0 bg-white/5 p-4 rounded-xl border border-white/10 shadow-lg">
                                     <label className="font-bold text-[#fa9400]">Select Artist(s):</label>
                                     <div className="w-72">
@@ -2350,7 +2392,7 @@
                         )}
 
                         {activeTab === "Shot Distribution" && (
-                            <div className="p-6 h-full flex flex-col gap-6 overflow-hidden animate-fadeIn">
+                            <div className="p-6 h-full flex flex-col gap-6 overflow-hidden animate-liquid-reveal">
                                 <div className="flex border-b border-white/10 gap-2 overflow-x-auto pb-1">
                                     {Object.keys(distributionData.struct).sort().map(cat => (
                                         <div key={cat} onClick={()=>setDistCategoryTab(cat)} className={`px-5 py-2 cursor-pointer font-bold rounded-t-lg transition-colors ${distCategoryTab===cat ? 'bg-white/10 text-[#fa9400] border-b-2 border-[#fa9400]' : 'text-gray-500 hover:text-gray-300'}`}>
@@ -2402,7 +2444,7 @@
                         )}
 
                         {activeTab === "Comp Summary" && (
-                            <div className="p-6 h-full flex flex-col gap-8 overflow-y-auto animate-fadeIn custom-scrollbar">
+                            <div className="p-6 h-full flex flex-col gap-8 overflow-y-auto animate-liquid-reveal custom-scrollbar">
                                 <div className="flex flex-col gap-4">
                                     <div className="flex justify-between items-end border-b border-white/10 pb-3">
                                         <h3 className="text-[#fa9400] font-bold text-xl tracking-tight">Comp (All Shots)</h3>
@@ -2427,7 +2469,7 @@
                         )}
 
                         {activeTab === "Roto/Paint Summary" && (
-                            <div className="p-6 h-full flex flex-col gap-6 overflow-hidden animate-fadeIn">
+                            <div className="p-6 h-full flex flex-col gap-6 overflow-hidden animate-liquid-reveal">
                                 <div className="flex border-b border-white/10 flex-shrink-0 overflow-x-auto pb-1 gap-2">
                                     {["Roto (All)", "Paint (All)", "Roto (Inhouse)", "Paint (Inhouse)", "Roto (Outsource)", "Paint (Outsource)"].map(sub => (
                                         <div key={sub} onClick={()=>setRotoPaintSubTab(sub)} className={`px-5 py-2 cursor-pointer font-bold whitespace-nowrap rounded-t-lg transition-colors ${rotoPaintSubTab===sub ? 'bg-white/10 text-[#fa9400] border-b-2 border-[#fa9400]' : 'text-gray-500 hover:text-gray-300'}`}>
